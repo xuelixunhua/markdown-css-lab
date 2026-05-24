@@ -1,0 +1,655 @@
+const markdownInput = document.getElementById("markdownInput");
+const cssInput = document.getElementById("cssInput");
+const previewHost = document.getElementById("previewHost");
+const docStats = document.getElementById("docStats");
+const saveState = document.getElementById("saveState");
+const copyState = document.getElementById("copyState");
+const themeSelect = document.getElementById("themeSelect");
+const syncScroll = document.getElementById("syncScroll");
+const previewScroller = document.querySelector(".phone-screen");
+
+const previewShadow = previewHost.attachShadow({ mode: "open" });
+previewShadow.innerHTML = `
+  <style id="themeStyle"></style>
+  <section id="nice" class="preview-article"></section>
+`;
+const themeStyle = previewShadow.getElementById("themeStyle");
+const preview = previewShadow.getElementById("nice");
+
+const storageKeys = {
+  markdown: "wechat_renderer_markdown",
+  css: "wechat_renderer_css",
+  theme: "wechat_renderer_theme",
+  sync: "wechat_renderer_sync_scroll",
+};
+
+const themeFiles = {
+  wechat: {
+    label: "公众号",
+    path: "../themes/wechat-editorial.css",
+  },
+  founder: {
+    label: "PDF 手册",
+    path: "../themes/founder-editorial.css",
+  },
+  technical: {
+    label: "技术文档",
+    path: "../themes/technical-doc.css",
+  },
+};
+
+let activeTheme = "wechat";
+let isSyncingScroll = false;
+
+const sampleMarkdown = `# 这是一篇公众号长文标题
+
+## 目录
+
+[TOC]
+
+## AI 原生创业的真正变化
+
+过去，创业者最稀缺的是工程资源。现在，**真正稀缺的是判断力、审美和持续迭代的节奏**。
+
+当 AI 可以帮你写代码、做调研、整理竞品、起草 PRD，创始人的工作重心就会从“能不能做出来”，转向“该不该做、做到什么程度、什么时候停止”。
+
+> 早期产品最怕的不是粗糙，而是没有一个清晰的判断标准。粗糙可以修，方向漂移会让团队越忙越远。
+
+### 一个更实用的检查清单
+
+- 这个问题是否足够具体？
+- 用户是否已经在为它付出时间或金钱？
+- 我们是否能在一周内做出可验证的原型？
+- 如果数据不好，是否知道下一步该怎么改？
+
+### 复制到公众号前的列表格式
+
+- **装机容量**
+：截至2023年11月，全国累计装机容量持续增长。
+  - 火电：仍然是主要电源
+  - 光伏：增速更快
+
+- **发电占比**
+:
+  - 风光合计：占比继续提升
+  - 核电：利用小时数较高
+
+1. **平抑价格**:
+通过“削峰填谷”减少价格波动。
+
+- **核心行为：时间套利**
+——在电价低的夜间或中午充电，在电价高的傍晚放电。
+
+### 三种工具的分工
+
+| 工具 | 适合场景 | 不适合场景 |
+| --- | --- | --- |
+| Chat | 快速问答、草稿、反方观点 | 长期项目上下文 |
+| Claude Code | 代码库修改、自动化、测试 | 没有明确目标的探索 |
+| 知识库 | 复用研究和判断框架 | 临时闲聊 |
+
+## 结论
+
+一个好的 Markdown 渲染系统，不只是把文字变漂亮，而是让结构、重点和节奏自然浮出来。`;
+
+const sampleCss = `/* 当前 CSS 会参与预览，也会在复制时转成 inline style */
+#nice .toc {
+  line-height: 1.22;
+}
+
+#nice .toc li {
+  margin: 1px 0;
+  line-height: 1.28;
+}
+
+#nice strong {
+  color: #d94721;
+  font-weight: 800;
+}`;
+
+const inlineProperties = [
+  "display",
+  "margin",
+  "margin-top",
+  "margin-right",
+  "margin-bottom",
+  "margin-left",
+  "padding",
+  "padding-top",
+  "padding-right",
+  "padding-bottom",
+  "padding-left",
+  "border",
+  "border-top",
+  "border-right",
+  "border-bottom",
+  "border-left",
+  "border-radius",
+  "background",
+  "background-color",
+  "color",
+  "font-family",
+  "font-size",
+  "font-weight",
+  "font-style",
+  "line-height",
+  "letter-spacing",
+  "text-align",
+  "text-decoration",
+  "vertical-align",
+  "white-space",
+  "word-break",
+  "overflow-wrap",
+  "list-style-type",
+  "list-style-position",
+];
+
+function slugify(text, index) {
+  const slug = text
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}\s-]/gu, "")
+    .replace(/\s+/g, "-");
+  return slug || `heading-${index + 1}`;
+}
+
+function isListLine(line) {
+  return /^\s*(?:[-*+]|\d+[.)])\s+/.test(line);
+}
+
+function isNonContinuationLine(line) {
+  const text = line.trim();
+  if (!text) return true;
+  return /^(?:#{1,6}\s+|[-*+]\s+|\d+[.)]\s+|>\s*|\|)/.test(text);
+}
+
+function isDefinitionLikeListBody(listBody) {
+  const trimmed = listBody.trim();
+  const strongOnly = /^(?:\*\*[^*]+\*\*|__[^_]+__)(?:[:：])?$/.test(trimmed);
+  const compactLabel = /^[\p{L}\p{N}\p{Script=Han}\s（）()、/.-]{1,28}[:：]$/u.test(trimmed);
+  return strongOnly || compactLabel;
+}
+
+function shouldMergeListContinuationLine(previousLine, currentLine) {
+  const currentText = currentLine.trim();
+  if (isNonContinuationLine(currentLine)) return false;
+
+  const previousText = previousLine.trimEnd();
+  const previousIndent = previousLine.match(/^\s*/)[0].length;
+  const currentIndent = currentLine.match(/^\s*/)[0].length;
+  if (currentIndent < previousIndent) return false;
+
+  const listMatch = previousText.match(/^(\s*(?:[-*+]|\d+[.)])\s+)(.+)$/);
+  if (!listMatch) return false;
+
+  const listBody = listMatch[2].trim();
+  if (!listBody) return false;
+  if (/^[:：]/.test(currentText)) return true;
+
+  return isDefinitionLikeListBody(listBody);
+}
+
+function mergeListContinuationLine(previousLine, currentLine) {
+  const currentText = currentLine.trim();
+
+  if (/^[:：]/.test(currentText)) {
+    const mergedColon = currentText.replace(/^[:：]\s*/, "：");
+    return previousLine.trimEnd() + mergedColon;
+  }
+
+  const normalizedPrevious = previousLine.trimEnd().replace(/:\s*$/, "：");
+  return normalizedPrevious + currentText;
+}
+
+function preprocessMarkdown(markdown) {
+  const lines = markdown.split(/\r?\n/);
+  const normalized = [];
+  let fenceChar = "";
+
+  lines.forEach((line) => {
+    const fenceMatch = line.trim().match(/^(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const nextFenceChar = fenceMatch[1][0];
+      fenceChar = fenceChar === nextFenceChar ? "" : nextFenceChar;
+      normalized.push(line);
+      return;
+    }
+
+    if (!fenceChar && normalized.length) {
+      const previousLine = normalized[normalized.length - 1];
+      if (isListLine(previousLine) && shouldMergeListContinuationLine(previousLine, line)) {
+        normalized[normalized.length - 1] = mergeListContinuationLine(previousLine, line);
+        return;
+      }
+    }
+
+    normalized.push(line);
+  });
+
+  return normalized.join("\n");
+}
+
+function getScrollMax(element) {
+  return Math.max(0, element.scrollHeight - element.clientHeight);
+}
+
+function syncScrollPosition(source, target) {
+  if (!syncScroll.checked || isSyncingScroll || !source || !target) return;
+
+  const sourceMax = getScrollMax(source);
+  const targetMax = getScrollMax(target);
+  if (sourceMax <= 0 || targetMax <= 0) return;
+
+  isSyncingScroll = true;
+  target.scrollTop = (source.scrollTop / sourceMax) * targetMax;
+  requestAnimationFrame(() => {
+    isSyncingScroll = false;
+  });
+}
+
+function syncPreviewToEditor() {
+  syncScrollPosition(markdownInput, previewScroller);
+}
+
+function renderMarkdown() {
+  themeStyle.textContent = prepareThemeCss(cssInput.value);
+
+  if (!window.marked || !window.DOMPurify) {
+    preview.innerHTML = "<p>Markdown renderer is still loading.</p>";
+    return;
+  }
+
+  marked.setOptions({
+    gfm: true,
+    breaks: true,
+    mangle: false,
+    headerIds: false,
+  });
+
+  const preparedMarkdown = preprocessMarkdown(markdownInput.value);
+  const rawHtml = marked.parse(preparedMarkdown);
+  const cleanHtml = DOMPurify.sanitize(rawHtml, {
+    ADD_ATTR: ["id", "target", "rel"],
+  });
+
+  const temp = document.createElement("div");
+  temp.innerHTML = cleanHtml;
+
+  const headings = [...temp.querySelectorAll("h1,h2,h3,h4,h5,h6")];
+  const usedIds = new Map();
+
+  headings.forEach((heading, index) => {
+    const base = slugify(heading.textContent, index);
+    const seen = usedIds.get(base) || 0;
+    usedIds.set(base, seen + 1);
+    heading.id = seen ? `${base}-${seen + 1}` : base;
+  });
+
+  const toc = buildToc(headings);
+  [...temp.querySelectorAll("p")].forEach((paragraph) => {
+    if (/^\[toc\]$/i.test(paragraph.textContent.trim())) {
+      paragraph.replaceWith(toc.cloneNode(true));
+    }
+  });
+
+  preview.innerHTML = temp.innerHTML;
+  updateStats(headings.length);
+  persist();
+  requestAnimationFrame(syncPreviewToEditor);
+}
+
+function prepareThemeCss(css) {
+  return css.replace(/:root/g, ":host");
+}
+
+function buildToc(headings) {
+  const toc = document.createElement("div");
+  toc.className = "toc";
+
+  const list = document.createElement("ul");
+  const tocHeadings = headings.filter((heading) => {
+    const text = heading.textContent.trim().toLowerCase();
+    return heading.tagName !== "H1" && text !== "目录" && text !== "contents";
+  });
+  const items = tocHeadings.length ? tocHeadings : headings;
+
+  items.forEach((heading) => {
+    const level = Number(heading.tagName.slice(1));
+    const li = document.createElement("li");
+    li.style.marginLeft = `${Math.max(0, level - 2) * 14}px`;
+
+    const link = document.createElement("a");
+    link.href = `#${heading.id}`;
+    link.textContent = heading.textContent.trim();
+    li.appendChild(link);
+    list.appendChild(li);
+  });
+
+  toc.appendChild(list);
+  return toc;
+}
+
+function updateStats(headingCount) {
+  const text = markdownInput.value.replace(/[#>*_`~\-[\]()|]/g, "");
+  const words = text.replace(/\s+/g, "").length;
+  docStats.textContent = `${words} 字 · ${headingCount} 标题`;
+  saveState.textContent = "已保存";
+}
+
+function persist() {
+  localStorage.setItem(storageKeys.markdown, markdownInput.value);
+  localStorage.setItem(storageKeys.css, cssInput.value);
+  localStorage.setItem(storageKeys.theme, activeTheme);
+  localStorage.setItem(storageKeys.sync, syncScroll.checked ? "true" : "false");
+}
+
+function materializeCopyDecorations(clone) {
+  if (activeTheme !== "wechat") return;
+
+  clone.querySelectorAll("h2").forEach((heading) => {
+    const rule = document.createElement("span");
+    rule.setAttribute(
+      "style",
+      "display:block;width:36px;height:3px;margin:0 auto 14px;background:#d87556;"
+    );
+    heading.insertBefore(rule, heading.firstChild);
+  });
+}
+
+function getFirstMeaningfulChild(node) {
+  return [...node.childNodes].find((child) => {
+    if (child.nodeType === Node.ELEMENT_NODE) return true;
+    return child.nodeType === Node.TEXT_NODE && child.textContent.trim();
+  });
+}
+
+function removeLeadingBreakAfterLabel(labelNode) {
+  let cursor = labelNode.nextSibling;
+
+  while (cursor && cursor.nodeType === Node.TEXT_NODE && !cursor.textContent.trim()) {
+    const emptyNode = cursor;
+    cursor = cursor.nextSibling;
+    emptyNode.remove();
+  }
+
+  if (cursor?.nodeName !== "BR") return;
+
+  const breakNode = cursor;
+  cursor = cursor.nextSibling;
+  breakNode.remove();
+
+  if (cursor?.nodeType === Node.TEXT_NODE) {
+    cursor.textContent = cursor.textContent.replace(/^\s+/, "");
+  }
+}
+
+function bindLeadingListColon(cloneRoot) {
+  cloneRoot.querySelectorAll("li, li p").forEach((node) => {
+    const firstChild = getFirstMeaningfulChild(node);
+    if (!firstChild || firstChild.nodeType !== Node.ELEMENT_NODE) return;
+    if (!["STRONG", "B", "SPAN"].includes(firstChild.tagName)) return;
+
+    const nextNode = firstChild.nextSibling;
+    if (!nextNode || nextNode.nodeType !== Node.TEXT_NODE) return;
+
+    const colonMatch = nextNode.textContent.match(/^[:：]\s*/);
+    if (!colonMatch) {
+      if (/[:：]$/.test(firstChild.textContent.trim())) {
+        removeLeadingBreakAfterLabel(firstChild);
+      }
+      return;
+    }
+
+    firstChild.appendChild(document.createTextNode("："));
+    nextNode.textContent = nextNode.textContent.slice(colonMatch[0].length);
+    if (!nextNode.textContent) nextNode.remove();
+    removeLeadingBreakAfterLabel(firstChild);
+  });
+}
+
+function replaceElementTag(node, tagName) {
+  const replacement = document.createElement(tagName);
+  [...node.attributes].forEach((attribute) => {
+    replacement.setAttribute(attribute.name, attribute.value);
+  });
+  replacement.innerHTML = node.innerHTML;
+  node.replaceWith(replacement);
+  return replacement;
+}
+
+function normalizeSemanticInlineTagsForWeChat(cloneRoot) {
+  cloneRoot.querySelectorAll("strong, b").forEach((node) => {
+    const span = replaceElementTag(node, "span");
+    span.style.display = "inline";
+    if (!span.style.fontWeight) span.style.fontWeight = "800";
+  });
+
+  cloneRoot.querySelectorAll("em, i").forEach((node) => {
+    const span = replaceElementTag(node, "span");
+    span.style.display = "inline";
+    if (!span.style.fontStyle) span.style.fontStyle = "italic";
+  });
+}
+
+function liftNestedListsForWeChat(cloneRoot) {
+  cloneRoot.querySelectorAll("li > ul, li > ol").forEach((list) => {
+    list.parentElement.insertAdjacentElement("afterend", list);
+  });
+}
+
+function normalizeInlineForWeChat(cloneRoot) {
+  cloneRoot.querySelectorAll("*").forEach((node) => {
+    node.style.removeProperty("width");
+    node.style.removeProperty("max-width");
+    node.style.removeProperty("min-width");
+    node.style.removeProperty("height");
+    node.style.removeProperty("min-height");
+  });
+
+  cloneRoot.querySelectorAll("img,svg").forEach((node) => {
+    node.style.maxWidth = "100%";
+    node.style.height = "auto";
+  });
+
+  cloneRoot.querySelectorAll("table").forEach((node) => {
+    node.style.width = "100%";
+    node.style.maxWidth = "100%";
+    node.style.borderCollapse = "collapse";
+  });
+}
+
+function inlineStyles(sourceRoot, cloneRoot) {
+  const sourceNodes = [sourceRoot, ...sourceRoot.querySelectorAll("*")];
+  const cloneNodes = [cloneRoot, ...cloneRoot.querySelectorAll("*")];
+
+  sourceNodes.forEach((sourceNode, index) => {
+    const cloneNode = cloneNodes[index];
+    if (!cloneNode || cloneNode.nodeType !== Node.ELEMENT_NODE) return;
+
+    const computed = window.getComputedStyle(sourceNode);
+    const styleText = inlineProperties
+      .map((property) => {
+        const value = computed.getPropertyValue(property);
+        return value ? `${property}:${value}` : "";
+      })
+      .filter(Boolean)
+      .join(";");
+
+    cloneNode.setAttribute("style", styleText);
+  });
+
+  materializeCopyDecorations(cloneRoot);
+  bindLeadingListColon(cloneRoot);
+  normalizeSemanticInlineTagsForWeChat(cloneRoot);
+  normalizeInlineForWeChat(cloneRoot);
+  liftNestedListsForWeChat(cloneRoot);
+  cloneRoot.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
+  cloneRoot.querySelectorAll("a[href^='#']").forEach((node) => node.removeAttribute("href"));
+}
+
+function getInlineArticle() {
+  const clone = preview.cloneNode(true);
+  inlineStyles(preview, clone);
+  return clone.outerHTML;
+}
+
+async function copyRich() {
+  const html = getInlineArticle();
+  const text = preview.innerText;
+
+  try {
+    if (navigator.clipboard && window.ClipboardItem) {
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          "text/html": new Blob([html], { type: "text/html" }),
+          "text/plain": new Blob([text], { type: "text/plain" }),
+        }),
+      ]);
+    } else {
+      fallbackCopy(html);
+    }
+    flashCopyState("已复制富文本");
+  } catch {
+    fallbackCopy(html);
+    flashCopyState("已复制 HTML");
+  }
+}
+
+async function copyHtml() {
+  const html = getInlineArticle();
+  await navigator.clipboard.writeText(html);
+  flashCopyState("HTML 已复制");
+}
+
+function fallbackCopy(html) {
+  const container = document.createElement("div");
+  container.contentEditable = "true";
+  container.style.position = "fixed";
+  container.style.left = "-9999px";
+  container.innerHTML = html;
+  document.body.appendChild(container);
+
+  const range = document.createRange();
+  range.selectNodeContents(container);
+  const selection = window.getSelection();
+  selection.removeAllRanges();
+  selection.addRange(range);
+  document.execCommand("copy");
+  selection.removeAllRanges();
+  container.remove();
+}
+
+function flashCopyState(message) {
+  copyState.textContent = message;
+  setTimeout(() => {
+    copyState.textContent = "就绪";
+  }, 1600);
+}
+
+function downloadHtml() {
+  const article = getInlineArticle();
+  const html = `<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>wechat-article</title>
+</head>
+<body>
+${article}
+</body>
+</html>`;
+
+  const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "wechat-article.html";
+  link.click();
+  URL.revokeObjectURL(url);
+}
+
+function switchTab(tabName) {
+  document.querySelectorAll(".tab").forEach((tab) => {
+    tab.classList.toggle("active", tab.dataset.tab === tabName);
+  });
+  markdownInput.classList.toggle("active", tabName === "markdown");
+  cssInput.classList.toggle("active", tabName === "css");
+}
+
+async function loadTheme(themeName, options = {}) {
+  const nextTheme = themeFiles[themeName] ? themeName : "wechat";
+  activeTheme = nextTheme;
+  themeSelect.value = nextTheme;
+
+  try {
+    const response = await fetch(themeFiles[nextTheme].path);
+    if (!response.ok) throw new Error(`Failed to load ${themeFiles[nextTheme].path}`);
+    cssInput.value = await response.text();
+  } catch {
+    cssInput.value = sampleCss;
+  }
+
+  if (!options.silent) renderMarkdown();
+}
+
+async function restore() {
+  markdownInput.value = localStorage.getItem(storageKeys.markdown) || sampleMarkdown;
+  activeTheme = localStorage.getItem(storageKeys.theme) || "wechat";
+  themeSelect.value = activeTheme;
+  syncScroll.checked = localStorage.getItem(storageKeys.sync) !== "false";
+
+  const savedCss = localStorage.getItem(storageKeys.css);
+  if (savedCss && !savedCss.includes("当前 CSS 会参与预览")) {
+    cssInput.value = savedCss;
+  } else {
+    await loadTheme(activeTheme, { silent: true });
+  }
+}
+
+document.querySelectorAll(".tab").forEach((tab) => {
+  tab.addEventListener("click", () => switchTab(tab.dataset.tab));
+});
+
+markdownInput.addEventListener("input", () => {
+  saveState.textContent = "保存中...";
+  renderMarkdown();
+});
+
+cssInput.addEventListener("input", () => {
+  saveState.textContent = "保存中...";
+  renderMarkdown();
+});
+
+markdownInput.addEventListener(
+  "scroll",
+  () => syncScrollPosition(markdownInput, previewScroller),
+  { passive: true }
+);
+
+previewScroller.addEventListener(
+  "scroll",
+  () => syncScrollPosition(previewScroller, markdownInput),
+  { passive: true }
+);
+
+document.getElementById("copyRichBtn").addEventListener("click", copyRich);
+document.getElementById("copyHtmlBtn").addEventListener("click", copyHtml);
+document.getElementById("downloadBtn").addEventListener("click", downloadHtml);
+themeSelect.addEventListener("change", async () => {
+  await loadTheme(themeSelect.value);
+});
+syncScroll.addEventListener("change", () => {
+  persist();
+  syncPreviewToEditor();
+});
+document.getElementById("sampleBtn").addEventListener("click", () => {
+  markdownInput.value = sampleMarkdown;
+  renderMarkdown();
+});
+document.getElementById("clearBtn").addEventListener("click", () => {
+  markdownInput.value = "";
+  renderMarkdown();
+});
+
+restore().then(renderMarkdown);

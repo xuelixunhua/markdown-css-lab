@@ -1,0 +1,331 @@
+/*
+ * WeChat Editorial
+ * Mobile-first Markdown theme for WeChat-style renderers such as mdnice/doocs.
+ * Scope is centered on #nice so it can be pasted into WeChat Markdown tools.
+ */
+
+:root {
+  --we-ink: #1f1f1f;
+  --we-soft-ink: #4b4b4b;
+  --we-muted: #888888;
+  --we-rule: #ece7e2;
+  --we-tint: #fbf7f3;
+  --we-accent: #d87556;
+  --we-accent-dark: #6d3528;
+  --we-strong: #d94721;
+  --we-serif: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", SimSun, serif;
+  --we-sans: "Optima-Regular", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  --we-mono: Menlo, Consolas, monospace;
+}
+
+#nice,
+.wechat-rendered,
+.mdnice {
+  box-sizing: border-box;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 !important;
+  color: var(--we-ink);
+  font-family: var(--we-sans);
+  font-size: 16px;
+  line-height: 1.75;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+#nice p,
+.wechat-rendered p,
+.mdnice p {
+  margin: 12px 0;
+  padding: 0;
+  color: var(--we-ink);
+  font-size: 16px;
+  line-height: 1.75;
+  text-align: justify;
+}
+
+#nice h1,
+.wechat-rendered h1,
+.mdnice h1 {
+  margin: 34px 0 20px;
+  padding: 0 0 14px;
+  border-bottom: 1px solid var(--we-rule);
+  color: var(--we-ink);
+  font-family: var(--we-serif);
+  font-size: 25px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-align: left;
+}
+
+#nice h2,
+.wechat-rendered h2,
+.mdnice h2 {
+  margin: 42px 0 18px;
+  padding: 0;
+  color: var(--we-ink);
+  font-family: var(--we-serif);
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: center;
+}
+
+#nice h2::before,
+.wechat-rendered h2::before,
+.mdnice h2::before {
+  content: "";
+  display: block;
+  width: 36px;
+  height: 3px;
+  margin: 0 auto 14px;
+  background: var(--we-accent);
+}
+
+#nice h3,
+.wechat-rendered h3,
+.mdnice h3 {
+  margin: 32px 0 14px;
+  padding-left: 11px;
+  border-left: 4px solid var(--we-accent);
+  color: var(--we-ink);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+#nice h4,
+.wechat-rendered h4,
+.mdnice h4 {
+  margin: 24px 0 10px;
+  color: var(--we-accent-dark);
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+#nice h5,
+#nice h6,
+.wechat-rendered h5,
+.wechat-rendered h6,
+.mdnice h5,
+.mdnice h6 {
+  margin: 20px 0 8px;
+  color: var(--we-muted);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+#nice strong,
+.wechat-rendered strong,
+.mdnice strong {
+  color: var(--we-strong);
+  font-weight: 800;
+}
+
+#nice em,
+.wechat-rendered em,
+.mdnice em {
+  color: var(--we-muted);
+  font-style: italic;
+}
+
+#nice a,
+.wechat-rendered a,
+.mdnice a {
+  color: var(--we-accent-dark);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(216, 117, 86, 0.45);
+}
+
+#nice blockquote,
+.wechat-rendered blockquote,
+.mdnice blockquote {
+  margin: 22px 0;
+  padding: 12px 14px;
+  border-left: 4px solid var(--we-accent);
+  background: var(--we-tint);
+  color: var(--we-soft-ink);
+}
+
+#nice blockquote p,
+.wechat-rendered blockquote p,
+.mdnice blockquote p {
+  margin: 6px 0;
+  color: var(--we-soft-ink);
+  font-size: 15px;
+  line-height: 1.7;
+  text-align: left;
+}
+
+#nice ul,
+#nice ol,
+.wechat-rendered ul,
+.wechat-rendered ol,
+.mdnice ul,
+.mdnice ol {
+  margin: 12px 0;
+  padding-left: 1.35em;
+}
+
+#nice li,
+.wechat-rendered li,
+.mdnice li {
+  margin: 6px 0;
+  line-height: 1.72;
+}
+
+#nice li section,
+.wechat-rendered li section,
+.mdnice li section {
+  margin: 0;
+  padding: 0;
+}
+
+#nice hr,
+.wechat-rendered hr,
+.mdnice hr {
+  height: 1px;
+  margin: 30px 0;
+  background: var(--we-rule);
+  border: 0;
+}
+
+#nice img,
+.wechat-rendered img,
+.mdnice img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 18px auto;
+}
+
+#nice figcaption,
+.wechat-rendered figcaption,
+.mdnice figcaption {
+  margin-top: -8px;
+  color: var(--we-muted);
+  font-size: 13px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+#nice p code,
+#nice li code,
+.wechat-rendered p code,
+.wechat-rendered li code,
+.mdnice p code,
+.mdnice li code {
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: #f8f1eb;
+  color: var(--we-accent-dark);
+  font-family: var(--we-mono);
+  font-size: 0.9em;
+}
+
+#nice pre,
+.wechat-rendered pre,
+.mdnice pre {
+  margin: 18px 0;
+  padding: 12px;
+  overflow-x: auto;
+  border: 1px solid var(--we-rule);
+  border-radius: 4px;
+  background: #fbfaf8;
+}
+
+#nice pre code,
+.wechat-rendered pre code,
+.mdnice pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--we-ink);
+  font-family: var(--we-mono);
+  font-size: 13px;
+  line-height: 1.6;
+  white-space: pre;
+}
+
+#nice table,
+.wechat-rendered table,
+.mdnice table {
+  width: 100%;
+  margin: 18px 0;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+#nice table th,
+#nice table td,
+.wechat-rendered table th,
+.wechat-rendered table td,
+.mdnice table th,
+.mdnice table td {
+  padding: 8px 9px;
+  border: 1px solid var(--we-rule);
+  vertical-align: top;
+}
+
+#nice table th,
+.wechat-rendered table th,
+.mdnice table th {
+  color: var(--we-accent-dark);
+  background: var(--we-tint);
+  font-weight: 700;
+}
+
+#nice .toc,
+.wechat-rendered .toc,
+.mdnice .toc {
+  margin: 18px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--we-rule);
+  border-left: 3px solid var(--we-accent);
+  border-radius: 4px;
+  background: var(--we-tint);
+  line-height: 1.28;
+}
+
+#nice .toc ul,
+.wechat-rendered .toc ul,
+.mdnice .toc ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+#nice .toc li,
+.wechat-rendered .toc li,
+.mdnice .toc li {
+  margin: 2px 0;
+  color: var(--we-soft-ink);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+#nice .toc a,
+.wechat-rendered .toc a,
+.mdnice .toc a {
+  border-bottom: 0;
+}
+
+#nice .footnote-word,
+#nice .footnote-ref,
+.wechat-rendered .footnote-word,
+.wechat-rendered .footnote-ref,
+.mdnice .footnote-word,
+.mdnice .footnote-ref {
+  color: var(--we-accent-dark);
+  font-weight: 500;
+}
+
+#nice .footnotes-sep,
+.wechat-rendered .footnotes-sep,
+.mdnice .footnotes-sep {
+  margin-top: 28px;
+  border-top: 1px solid var(--we-rule);
+}

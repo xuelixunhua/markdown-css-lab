@@ -1,0 +1,369 @@
+/*
+ * Founder Editorial
+ * Markdown-to-PDF / handbook theme inspired by restrained editorial booklets.
+ * Targets Typora (#write), WeChat-Nice-style wrappers (#nice), and generic Markdown HTML.
+ */
+
+:root {
+  --fe-paper: #ffffff;
+  --fe-preview-bg: #eee9e2;
+  --fe-ink: #1a1a1a;
+  --fe-soft-ink: #555555;
+  --fe-muted: #888888;
+  --fe-rule: #e7dfd8;
+  --fe-tint: #faf6f2;
+  --fe-accent: #d87556;
+  --fe-accent-dark: #4a2a1f;
+  --fe-serif: "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", SimSun, Georgia, serif;
+  --fe-sans: "Noto Sans CJK SC", "Source Han Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --fe-mono: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+}
+
+@page {
+  size: A4;
+  margin: 20mm 20mm 18mm;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  background: var(--fe-preview-bg);
+  color: var(--fe-ink);
+  font-family: var(--fe-sans);
+}
+
+#write,
+#nice,
+.markdown-body,
+article.markdown {
+  box-sizing: border-box;
+  max-width: 180mm;
+  margin: 0 auto;
+  padding: 20mm;
+  background: var(--fe-paper);
+  color: var(--fe-ink);
+  font-family: var(--fe-sans);
+  font-size: 11pt;
+  line-height: 1.72;
+  overflow-wrap: break-word;
+  word-break: normal;
+}
+
+@media screen {
+  #write,
+  #nice,
+  .markdown-body,
+  article.markdown {
+    min-height: 100vh;
+    box-shadow: 0 18px 60px rgba(61, 45, 36, 0.12);
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+
+  #write,
+  #nice,
+  .markdown-body,
+  article.markdown {
+    max-width: none;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    box-shadow: none;
+  }
+}
+
+p {
+  margin: 0 0 0.9rem;
+  color: var(--fe-ink);
+  font-size: 1em;
+  line-height: 1.72;
+  text-align: justify;
+}
+
+a {
+  color: var(--fe-accent-dark);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(216, 117, 86, 0.5);
+}
+
+strong {
+  font-weight: 700;
+  color: var(--fe-ink);
+}
+
+em {
+  color: var(--fe-muted);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--fe-ink);
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
+h1 {
+  margin: 0 0 2rem;
+  padding-top: 0.4rem;
+  font-family: var(--fe-serif);
+  font-size: 32pt;
+  font-weight: 500;
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+h1 + p,
+h1 + blockquote {
+  margin-top: 1.4rem;
+}
+
+h2 {
+  margin: 2.3rem 0 0.9rem;
+  font-family: var(--fe-serif);
+  font-size: 20pt;
+  font-weight: 500;
+  line-height: 1.25;
+}
+
+h2 em {
+  margin-left: 0.35em;
+  color: var(--fe-muted);
+  font-family: var(--fe-serif);
+  font-size: 0.58em;
+  font-weight: 400;
+  font-style: italic;
+}
+
+h3 {
+  margin: 1.8rem 0 0.5rem;
+  font-family: var(--fe-serif);
+  font-size: 15pt;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+h3 em {
+  margin-left: 0.28em;
+  color: var(--fe-muted);
+  font-size: 0.78em;
+  font-weight: 400;
+  font-style: italic;
+}
+
+h4 {
+  margin: 1.35rem 0 0.4rem;
+  font-family: var(--fe-sans);
+  font-size: 11.5pt;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+h5 {
+  margin: 1.2rem 0 0.35rem;
+  color: var(--fe-accent-dark);
+  font-family: var(--fe-sans);
+  font-size: 9.5pt;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+h6 {
+  margin: 1rem 0 0.3rem;
+  color: var(--fe-muted);
+  font-family: var(--fe-sans);
+  font-size: 9pt;
+  font-weight: 600;
+}
+
+hr {
+  height: 1px;
+  margin: 2rem 0;
+  background: var(--fe-rule);
+  border: 0;
+}
+
+blockquote {
+  margin: 1.25rem 0;
+  padding: 0.75rem 1rem 0.75rem 1.15rem;
+  border-left: 4px solid var(--fe-accent);
+  background: var(--fe-tint);
+  color: var(--fe-soft-ink);
+}
+
+blockquote p {
+  margin: 0.35rem 0;
+  color: var(--fe-soft-ink);
+  text-align: left;
+}
+
+ul,
+ol {
+  margin: 0.8rem 0 1rem;
+  padding-left: 1.45rem;
+}
+
+li {
+  margin: 0.35rem 0;
+}
+
+li > p {
+  margin: 0.25rem 0;
+  text-align: left;
+}
+
+table {
+  width: 100%;
+  margin: 1.3rem 0;
+  border-collapse: collapse;
+  border-top: 2px solid var(--fe-accent);
+  border-bottom: 1px solid var(--fe-rule);
+  font-size: 9.8pt;
+  page-break-inside: avoid;
+}
+
+th,
+td {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--fe-rule);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  color: var(--fe-ink);
+  font-weight: 700;
+  background: #fbf8f5;
+}
+
+code,
+tt {
+  padding: 0.08em 0.28em;
+  border: 1px solid #eadfd8;
+  border-radius: 3px;
+  background: #fbf7f3;
+  color: var(--fe-accent-dark);
+  font-family: var(--fe-mono);
+  font-size: 0.9em;
+}
+
+pre {
+  margin: 1.25rem 0;
+  padding: 0.9rem 1rem;
+  overflow: auto;
+  border: 1px solid var(--fe-rule);
+  border-radius: 4px;
+  background: #fbfaf8;
+  line-height: 1.55;
+  page-break-inside: avoid;
+}
+
+pre code {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  white-space: pre;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin: 1.3rem auto;
+}
+
+figcaption {
+  margin-top: -0.6rem;
+  color: var(--fe-muted);
+  font-size: 9pt;
+  text-align: center;
+}
+
+.toc,
+.md-toc,
+nav[role="doc-toc"] {
+  margin: 1.2rem 0 1.6rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--fe-soft-ink);
+  font-size: 9.5pt;
+  line-height: 1.28;
+}
+
+.toc ul,
+.md-toc-content {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.toc li,
+.md-toc-item {
+  margin: 0.12rem 0;
+  padding: 0;
+  border-bottom: 0;
+  line-height: 1.28;
+}
+
+.toc a,
+.md-toc-inner,
+nav[role="doc-toc"] a {
+  color: var(--fe-soft-ink);
+  border-bottom: 0;
+  text-decoration: none;
+}
+
+.callout,
+.note,
+.tip,
+.warning {
+  margin: 1.3rem 0;
+  padding: 0.95rem 1rem;
+  border-left: 4px solid var(--fe-accent);
+  background: var(--fe-tint);
+}
+
+.cover-page,
+.chapter-page {
+  box-sizing: border-box;
+  min-height: 297mm;
+  margin: -20mm;
+  padding: 28mm 20mm;
+  background: var(--fe-accent);
+  color: #111;
+  page-break-after: always;
+}
+
+.cover-page h1,
+.chapter-page h1 {
+  max-width: 120mm;
+  margin: 0;
+  color: #111;
+  font-size: 38pt;
+  line-height: 1.22;
+}
+
+.cover-page p,
+.chapter-page p {
+  max-width: 125mm;
+  color: #2a1a14;
+  font-family: var(--fe-serif);
+  font-size: 17pt;
+  line-height: 1.45;
+  text-align: left;
+}

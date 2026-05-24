@@ -1,0 +1,113 @@
+h6 {
+  font-size: 18px;
+  color: #3399cc;
+}
+
+strong {
+  color: red;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 20px 0 10px;
+  padding: 0;
+  font-style: bold !important;
+  color: black !important;
+  margin: 1.5em 5px !important;
+  padding: 0.5em 0em !important;
+}
+
+h1 {
+  font-size: 32px;
+  border-bottom: 1px solid #ddd !important;
+  /* margin-bottom: 20px; */
+  /* color: #3399cc; */
+  text-align: center !important;
+}
+
+h2 {
+  /* color: #3399cc; */
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 20px;
+  /* padding-left: 25px; */
+  text-align: center !important;
+}
+
+p {
+  font-size: 16px;
+  padding: 5px 15px;
+  letter-spacing: 1px;
+  line-height: 170%;
+}
+
+
+blockquote {
+  display: block;
+  background: #fff;
+  padding: 10px 10px 10px 10px;
+  margin: 25px 30px;
+  position: relative;
+
+  /*Font*/
+  font-family: Georgia, serif;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #666;
+  text-align: justify;
+
+  /*Borders - (Optional)*/
+  border-left: 15px solid #00ADAD;
+  border-right: 2px solid #00ADAD;
+
+  /*Box Shadow - (Optional)*/
+  -moz-box-shadow: 2px 2px 15px #ccc;
+  -webkit-box-shadow: 2px 2px 15px #ccc;
+  box-shadow: 2px 2px 15px #ccc;
+}
+
+blockquote::before {
+
+
+  /*Font*/
+  font-family: Georgia, serif;
+  font-size: 60px;
+  font-weight: bold;
+  color: #999;
+
+  /*Positioning*/
+  position: absolute;
+  left: 10px;
+  top: 5px;
+}
+
+blockquote::after {
+  /*Reset to make sure*/
+  content: "";
+}
+
+blockquote a {
+  text-decoration: none;
+  background: #eee;
+  cursor: pointer;
+  padding: 0 3px;
+  color: #c76c0c;
+}
+
+blockquote a:hover {
+  color: #666;
+}
+
+blockquote em {
+  font-style: italic;
+}
+
+code {
+  white-space: pre-wrap;
+  border-radius: 2px;
+  display: inline;
+}
