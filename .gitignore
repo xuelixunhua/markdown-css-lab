@@ -3,3 +3,9 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# Local reference styles, kept outside the published project.
+github.css
+latex.css
+公众号.css
+尹航欧巴.css
+李笑来.css
