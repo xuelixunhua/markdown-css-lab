@@ -431,9 +431,64 @@ function normalizeSemanticInlineTagsForWeChat(cloneRoot) {
   });
 }
 
-function liftNestedListsForWeChat(cloneRoot) {
-  cloneRoot.querySelectorAll("li > ul, li > ol").forEach((list) => {
-    list.parentElement.insertAdjacentElement("afterend", list);
+function createListPrefix(listNode, index, level) {
+  const prefix = document.createElement("span");
+  const isOrdered = listNode.tagName === "OL";
+  const bullets = ["•", "▪", "◦"];
+  prefix.textContent = isOrdered ? `${index + 1}. ` : `${bullets[level % bullets.length]} `;
+  prefix.style.display = "inline";
+  prefix.style.color = "inherit";
+  prefix.style.fontWeight = "400";
+  return prefix;
+}
+
+function moveInlineContent(target, source) {
+  [...source.childNodes].forEach((child) => {
+    if (
+      child.nodeType === Node.ELEMENT_NODE &&
+      child.tagName === "P" &&
+      source.childNodes.length === 1
+    ) {
+      target.append(...child.childNodes);
+      return;
+    }
+
+    target.appendChild(child);
+  });
+}
+
+function flattenListForWeChat(listNode, level = 0) {
+  const fragment = document.createDocumentFragment();
+  const items = [...listNode.children].filter((child) => child.tagName === "LI");
+
+  items.forEach((item, index) => {
+    const nestedLists = [...item.children].filter((child) => ["UL", "OL"].includes(child.tagName));
+    nestedLists.forEach((nestedList) => nestedList.remove());
+
+    const row = document.createElement("section");
+    row.setAttribute("style", item.getAttribute("style") || "");
+    row.style.display = "block";
+    row.style.margin = item.style.margin || "6px 0";
+    row.style.padding = "0";
+    row.style.paddingLeft = level ? `${level * 1.25}em` : "0";
+    row.style.listStyleType = "none";
+
+    row.appendChild(createListPrefix(listNode, index, level));
+    moveInlineContent(row, item);
+    fragment.appendChild(row);
+
+    nestedLists.forEach((nestedList) => {
+      fragment.appendChild(flattenListForWeChat(nestedList, level + 1));
+    });
+  });
+
+  return fragment;
+}
+
+function flattenListsForWeChat(cloneRoot) {
+  [...cloneRoot.querySelectorAll("ul, ol")].forEach((list) => {
+    if (list.closest("ul ul, ul ol, ol ul, ol ol")) return;
+    list.replaceWith(flattenListForWeChat(list));
   });
 }
 
@@ -482,7 +537,7 @@ function inlineStyles(sourceRoot, cloneRoot) {
   bindLeadingListColon(cloneRoot);
   normalizeSemanticInlineTagsForWeChat(cloneRoot);
   normalizeInlineForWeChat(cloneRoot);
-  liftNestedListsForWeChat(cloneRoot);
+  flattenListsForWeChat(cloneRoot);
   cloneRoot.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
   cloneRoot.querySelectorAll("a[href^='#']").forEach((node) => node.removeAttribute("href"));
 }
@@ -492,6 +547,11 @@ function getInlineArticle() {
   inlineStyles(preview, clone);
   return clone.outerHTML;
 }
+
+window.wechatRendererDebug = {
+  getInlineArticle,
+  preprocessMarkdown,
+};
 
 async function copyRich() {
   const html = getInlineArticle();
