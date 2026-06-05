@@ -10,6 +10,41 @@ const previewScroller = document.querySelector(".phone-screen");
 
 const previewShadow = previewHost.attachShadow({ mode: "open" });
 previewShadow.innerHTML = `
+  <style>
+    #nice .external-link-ref {
+      margin-left: 2px;
+      font-size: 0.72em;
+      font-weight: 600;
+      line-height: 1;
+      vertical-align: super;
+    }
+
+    #nice .external-link-footnotes {
+      margin: 28px 0 0;
+      padding-top: 12px;
+      border-top: 1px solid #ece7e2;
+    }
+
+    #nice .external-link-footnotes-title {
+      margin: 0 0 8px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.45;
+      text-align: left;
+    }
+
+    #nice .external-link-footnotes ol {
+      margin: 0;
+      padding-left: 1.2em;
+    }
+
+    #nice .external-link-footnotes li {
+      margin: 4px 0;
+      font-size: 13px;
+      line-height: 1.45;
+      word-break: break-all;
+    }
+  </style>
   <style id="themeStyle"></style>
   <section id="nice" class="preview-article"></section>
 `;
@@ -87,6 +122,10 @@ const sampleMarkdown = `# 这是一篇公众号长文标题
 | Chat | 快速问答、草稿、反方观点 | 长期项目上下文 |
 | Claude Code | 代码库修改、自动化、测试 | 没有明确目标的探索 |
 | 知识库 | 复用研究和判断框架 | 临时闲聊 |
+
+### 外部链接会自动转为脚注
+
+这里有一个 [Doocs Markdown 编辑器](https://github.com/doocs/md) 的参考链接，也可以放一个 [MDNice](https://mdnice.com/) 的产品链接。
 
 ## 结论
 
@@ -291,6 +330,7 @@ function renderMarkdown() {
       paragraph.replaceWith(toc.cloneNode(true));
     }
   });
+  appendExternalLinkFootnotes(temp);
 
   preview.innerHTML = temp.innerHTML;
   updateStats(headings.length);
@@ -327,6 +367,73 @@ function buildToc(headings) {
 
   toc.appendChild(list);
   return toc;
+}
+
+function normalizeExternalUrl(href) {
+  if (!href || !/^(https?:)?\/\//i.test(href)) return "";
+
+  try {
+    return new URL(href, window.location.href).href;
+  } catch {
+    return "";
+  }
+}
+
+function appendExternalLinkFootnotes(root) {
+  const externalLinks = [...root.querySelectorAll("a[href]")].filter((link) =>
+    Boolean(normalizeExternalUrl(link.getAttribute("href")))
+  );
+  if (!externalLinks.length) return;
+
+  const linkRefs = new Map();
+  const footnotes = [];
+
+  externalLinks.forEach((link) => {
+    const url = normalizeExternalUrl(link.getAttribute("href"));
+    if (!url) return;
+
+    if (!linkRefs.has(url)) {
+      linkRefs.set(url, linkRefs.size + 1);
+      footnotes.push(url);
+    }
+
+    const refIndex = linkRefs.get(url);
+    const text = document.createElement("span");
+    text.className = "external-link-text";
+    text.append(...link.childNodes);
+
+    const marker = document.createElement("sup");
+    marker.className = "external-link-ref";
+    marker.textContent = `[${refIndex}]`;
+    text.appendChild(marker);
+    link.replaceWith(text);
+  });
+
+  const section = document.createElement("section");
+  section.className = "external-link-footnotes";
+
+  const title = document.createElement("p");
+  title.className = "external-link-footnotes-title";
+  title.textContent = "参考链接";
+  section.appendChild(title);
+
+  const list = document.createElement("ol");
+  footnotes.forEach((url, index) => {
+    const item = document.createElement("li");
+    const label = document.createElement("span");
+    label.className = "external-link-footnote-index";
+    label.textContent = `[${index + 1}] `;
+
+    const value = document.createElement("span");
+    value.className = "external-link-footnote-url";
+    value.textContent = url;
+
+    item.append(label, value);
+    list.appendChild(item);
+  });
+
+  section.appendChild(list);
+  root.appendChild(section);
 }
 
 function updateStats(headingCount) {
@@ -549,6 +656,7 @@ function getInlineArticle() {
 }
 
 window.wechatRendererDebug = {
+  appendExternalLinkFootnotes,
   getInlineArticle,
   preprocessMarkdown,
 };
