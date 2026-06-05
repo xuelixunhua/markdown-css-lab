@@ -366,6 +366,13 @@
   word-break: break-all;
 }
 
+#nice .external-link-footnote-label,
+.wechat-rendered .external-link-footnote-label,
+.mdnice .external-link-footnote-label {
+  color: var(--we-soft-ink);
+  font-weight: 600;
+}
+
 #nice .external-link-footnote-url,
 .wechat-rendered .external-link-footnote-url,
 .mdnice .external-link-footnote-url {

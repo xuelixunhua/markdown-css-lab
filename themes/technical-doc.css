@@ -379,6 +379,11 @@ nav[role="doc-toc"] a {
   word-break: break-all;
 }
 
+.external-link-footnote-label {
+  color: var(--td-ink);
+  font-weight: 600;
+}
+
 .external-link-footnote-url {
   color: var(--td-muted);
 }

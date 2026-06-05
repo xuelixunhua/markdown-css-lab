@@ -44,6 +44,10 @@ previewShadow.innerHTML = `
       line-height: 1.45;
       word-break: break-all;
     }
+
+    #nice .external-link-footnote-label {
+      font-weight: 600;
+    }
   </style>
   <style id="themeStyle"></style>
   <section id="nice" class="preview-article"></section>
@@ -126,6 +130,10 @@ const sampleMarkdown = `# 这是一篇公众号长文标题
 ### 外部链接会自动转为脚注
 
 这里有一个 [Doocs Markdown 编辑器](https://github.com/doocs/md) 的参考链接，也可以放一个 [MDNice](https://mdnice.com/) 的产品链接。
+
+课程链接在这里：[林超：给年轻人的跨学科通识课](https://www.bilibili.com/cheese/play/ss298?csource=Hp_searchresult&spm_id_from=333.337.0.0)。
+
+这个 [微信内链](https://mp.weixin.qq.com/s/tJ-QIWRf4xx8O1VeivlX7w) 会保留在正文里，不进入参考链接。
 
 ## 结论
 
@@ -379,10 +387,31 @@ function normalizeExternalUrl(href) {
   }
 }
 
+function shouldConvertToFootnote(url) {
+  try {
+    const hostname = new URL(url).hostname.toLowerCase();
+    return hostname !== "mp.weixin.qq.com";
+  } catch {
+    return false;
+  }
+}
+
+function getFootnoteLabel(link, url) {
+  const label = link.textContent.replace(/\s+/g, " ").trim();
+  if (label && label !== url) return label;
+
+  try {
+    return new URL(url).hostname.replace(/^www\./, "");
+  } catch {
+    return "链接";
+  }
+}
+
 function appendExternalLinkFootnotes(root) {
-  const externalLinks = [...root.querySelectorAll("a[href]")].filter((link) =>
-    Boolean(normalizeExternalUrl(link.getAttribute("href")))
-  );
+  const externalLinks = [...root.querySelectorAll("a[href]")].filter((link) => {
+    const url = normalizeExternalUrl(link.getAttribute("href"));
+    return url && shouldConvertToFootnote(url);
+  });
   if (!externalLinks.length) return;
 
   const linkRefs = new Map();
@@ -394,7 +423,10 @@ function appendExternalLinkFootnotes(root) {
 
     if (!linkRefs.has(url)) {
       linkRefs.set(url, linkRefs.size + 1);
-      footnotes.push(url);
+      footnotes.push({
+        label: getFootnoteLabel(link, url),
+        url,
+      });
     }
 
     const refIndex = linkRefs.get(url);
@@ -418,15 +450,15 @@ function appendExternalLinkFootnotes(root) {
   section.appendChild(title);
 
   const list = document.createElement("ol");
-  footnotes.forEach((url, index) => {
+  footnotes.forEach((footnote) => {
     const item = document.createElement("li");
     const label = document.createElement("span");
-    label.className = "external-link-footnote-index";
-    label.textContent = `[${index + 1}] `;
+    label.className = "external-link-footnote-label";
+    label.textContent = `${footnote.label}：`;
 
     const value = document.createElement("span");
     value.className = "external-link-footnote-url";
-    value.textContent = url;
+    value.textContent = footnote.url;
 
     item.append(label, value);
     list.appendChild(item);
