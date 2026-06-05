@@ -8,7 +8,15 @@
 
 ## 快速开始
 
-在项目根目录运行：
+不要直接用 Chrome 双击打开 `wechat-renderer/index.html`。这个工具会通过浏览器加载 `themes/` 里的 CSS，并使用剪贴板 API；在 `file://` 本地文件协议下，Chrome 会限制这些能力，所以看起来会“没有效果”或主题无法加载。
+
+推荐方式一：双击项目根目录里的：
+
+```text
+start-renderer.bat
+```
+
+推荐方式二：在项目根目录运行：
 
 ```powershell
 C:/Users/xueli/anaconda3/python.exe -m http.server 8787 --bind 127.0.0.1
@@ -18,6 +26,12 @@ C:/Users/xueli/anaconda3/python.exe -m http.server 8787 --bind 127.0.0.1
 
 ```text
 http://127.0.0.1:8787/wechat-renderer/
+```
+
+如果你本机没有 Anaconda Python，也可以试：
+
+```powershell
+python -m http.server 8787 --bind 127.0.0.1
 ```
 
 ## 项目结构

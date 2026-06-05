@@ -2,6 +2,28 @@
 
 本地微信公众号 Markdown 渲染小工具。
 
+## 启动方式
+
+请从项目根目录启动本地服务器，不要直接双击打开这个目录里的 `index.html`。
+
+推荐双击：
+
+```text
+../start-renderer.bat
+```
+
+或者在项目根目录运行：
+
+```powershell
+C:/Users/xueli/anaconda3/python.exe -m http.server 8787 --bind 127.0.0.1
+```
+
+然后访问：
+
+```text
+http://127.0.0.1:8787/wechat-renderer/
+```
+
 核心流程：
 
 1. 在左侧写 Markdown。
