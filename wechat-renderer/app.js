@@ -86,7 +86,7 @@ const themeFiles = {
   },
 };
 
-const themeAssetVersion = "20260606-toc-wechat-adapters";
+const themeAssetVersion = "20260606-wechat-draft-toc";
 
 let activeTheme = "wechat";
 let cssIsCustom = false;
@@ -153,12 +153,17 @@ const sampleMarkdown = `# 这是一篇公众号长文标题
 
 const sampleCss = `/* 当前 CSS 会参与预览，也会在复制时转成 inline style */
 #nice .toc {
-  line-height: 1.22;
+  line-height: 1.28;
 }
 
 #nice .toc li {
   margin: 1px 0;
-  line-height: 1.28;
+  line-height: 1.32;
+}
+
+#nice p {
+  margin: 10px 0;
+  line-height: 1.68;
 }
 
 #nice strong {
@@ -687,6 +692,31 @@ function flattenListsForWeChat(cloneRoot) {
   });
 }
 
+function normalizeTocForWeChat(cloneRoot) {
+  cloneRoot.querySelectorAll(".toc a").forEach((anchor) => {
+    const span = replaceElementTag(anchor, "span");
+    span.removeAttribute("href");
+    span.style.display = "inline";
+    span.style.borderBottom = "0";
+    span.style.textDecoration = "none";
+  });
+
+  cloneRoot.querySelectorAll(".toc-marker").forEach((marker) => {
+    const markerText = marker.textContent.trim();
+    marker.textContent = markerText ? `${markerText}\u00a0` : "";
+    marker.style.display = "inline";
+    marker.style.width = "auto";
+    marker.style.minWidth = "0";
+    marker.style.marginRight = "6px";
+    marker.style.float = "none";
+    marker.style.textAlign = "left";
+  });
+
+  cloneRoot.querySelectorAll(".toc-text").forEach((text) => {
+    text.style.display = "inline";
+  });
+}
+
 function normalizeInlineForWeChat(cloneRoot) {
   cloneRoot.querySelectorAll("*").forEach((node) => {
     node.style.removeProperty("width");
@@ -733,6 +763,7 @@ function inlineStyles(sourceRoot, cloneRoot) {
   normalizeSemanticInlineTagsForWeChat(cloneRoot);
   normalizeInlineForWeChat(cloneRoot);
   flattenListsForWeChat(cloneRoot);
+  normalizeTocForWeChat(cloneRoot);
   cloneRoot.querySelectorAll("[id]").forEach((node) => node.removeAttribute("id"));
   cloneRoot.querySelectorAll("a[href^='#']").forEach((node) => node.removeAttribute("href"));
 }
@@ -746,6 +777,7 @@ function getInlineArticle() {
 window.wechatRendererDebug = {
   appendExternalLinkFootnotes,
   getInlineArticle,
+  normalizeTocForWeChat,
   preprocessMarkdown,
 };
 

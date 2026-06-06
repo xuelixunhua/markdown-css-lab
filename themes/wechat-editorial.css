@@ -28,7 +28,7 @@
   color: var(--we-ink);
   font-family: var(--we-sans);
   font-size: 16px;
-  line-height: 1.75;
+  line-height: 1.68;
   overflow-wrap: break-word;
   word-break: normal;
 }
@@ -36,11 +36,11 @@
 #nice p,
 .wechat-rendered p,
 .mdnice p {
-  margin: 12px 0;
+  margin: 10px 0;
   padding: 0;
   color: var(--we-ink);
   font-size: 16px;
-  line-height: 1.75;
+  line-height: 1.68;
   text-align: justify;
 }
 
@@ -163,7 +163,7 @@
 #nice blockquote,
 .wechat-rendered blockquote,
 .mdnice blockquote {
-  margin: 22px 0;
+  margin: 20px 0;
   padding: 12px 14px;
   border-left: 4px solid var(--we-accent);
   background: var(--we-tint);
@@ -176,7 +176,7 @@
   margin: 6px 0;
   color: var(--we-soft-ink);
   font-size: 15px;
-  line-height: 1.7;
+  line-height: 1.62;
   text-align: left;
 }
 
@@ -186,15 +186,15 @@
 .wechat-rendered ol,
 .mdnice ul,
 .mdnice ol {
-  margin: 12px 0;
+  margin: 10px 0;
   padding-left: 1.35em;
 }
 
 #nice li,
 .wechat-rendered li,
 .mdnice li {
-  margin: 6px 0;
-  line-height: 1.72;
+  margin: 4px 0;
+  line-height: 1.66;
 }
 
 #nice li section,
@@ -307,7 +307,7 @@
   border: 0;
   border-left: 2px solid var(--we-accent);
   background: transparent;
-  line-height: 1.35;
+  line-height: 1.32;
 }
 
 #nice .toc ul,
@@ -341,15 +341,13 @@
   margin: 3px 0;
   color: var(--we-soft-ink);
   font-size: 13.5px;
-  line-height: 1.42;
+  line-height: 1.34;
 }
 
 #nice .toc a,
 .wechat-rendered .toc a,
 .mdnice .toc a {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 8px;
+  display: block;
   color: var(--we-accent-dark);
   border-bottom: 0;
   text-decoration: none;
@@ -358,7 +356,9 @@
 #nice .toc-marker,
 .wechat-rendered .toc-marker,
 .mdnice .toc-marker {
-  min-width: 18px;
+  display: inline-block;
+  width: 20px;
+  margin-right: 8px;
   color: var(--we-accent);
   font-family: var(--we-sans);
   font-size: 11px;
@@ -370,6 +370,7 @@
 #nice .toc-text,
 .wechat-rendered .toc-text,
 .mdnice .toc-text {
+  display: inline;
   color: var(--we-accent-dark);
 }
 
