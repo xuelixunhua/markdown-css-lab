@@ -47,7 +47,7 @@
 #nice h1,
 .wechat-rendered h1,
 .mdnice h1 {
-  margin: 34px 0 20px;
+  margin: 38px 0 24px;
   padding: 0 0 14px;
   border-bottom: 1px solid var(--we-rule);
   color: var(--we-ink);
@@ -61,7 +61,7 @@
 #nice h2,
 .wechat-rendered h2,
 .mdnice h2 {
-  margin: 42px 0 18px;
+  margin: 50px 0 24px;
   padding: 0;
   color: var(--we-ink);
   font-family: var(--we-serif);
@@ -85,7 +85,7 @@
 #nice h3,
 .wechat-rendered h3,
 .mdnice h3 {
-  margin: 32px 0 14px;
+  margin: 38px 0 20px;
   padding-left: 11px;
   border-left: 4px solid var(--we-accent);
   color: var(--we-ink);
@@ -97,7 +97,7 @@
 #nice h4,
 .wechat-rendered h4,
 .mdnice h4 {
-  margin: 24px 0 10px;
+  margin: 30px 0 16px;
   color: var(--we-accent-dark);
   font-size: 16px;
   font-weight: 700;
@@ -110,11 +110,32 @@
 .wechat-rendered h6,
 .mdnice h5,
 .mdnice h6 {
-  margin: 20px 0 8px;
+  margin: 24px 0 12px;
   color: var(--we-muted);
   font-size: 14px;
   font-weight: 700;
   line-height: 1.5;
+}
+
+#nice h1 + p,
+#nice h2 + p,
+#nice h3 + p,
+#nice h4 + p,
+#nice h5 + p,
+#nice h6 + p,
+.wechat-rendered h1 + p,
+.wechat-rendered h2 + p,
+.wechat-rendered h3 + p,
+.wechat-rendered h4 + p,
+.wechat-rendered h5 + p,
+.wechat-rendered h6 + p,
+.mdnice h1 + p,
+.mdnice h2 + p,
+.mdnice h3 + p,
+.mdnice h4 + p,
+.mdnice h5 + p,
+.mdnice h6 + p {
+  margin-top: 0;
 }
 
 #nice strong,

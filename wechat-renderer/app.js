@@ -58,6 +58,7 @@ const preview = previewShadow.getElementById("nice");
 const storageKeys = {
   markdown: "wechat_renderer_markdown",
   css: "wechat_renderer_css",
+  cssMode: "wechat_renderer_css_mode",
   theme: "wechat_renderer_theme",
   sync: "wechat_renderer_sync_scroll",
 };
@@ -77,7 +78,10 @@ const themeFiles = {
   },
 };
 
+const themeAssetVersion = "20260606-heading-spacing";
+
 let activeTheme = "wechat";
+let cssIsCustom = false;
 let isSyncingScroll = false;
 
 const sampleMarkdown = `# 这是一篇公众号长文标题
@@ -477,9 +481,16 @@ function updateStats(headingCount) {
 
 function persist() {
   localStorage.setItem(storageKeys.markdown, markdownInput.value);
-  localStorage.setItem(storageKeys.css, cssInput.value);
   localStorage.setItem(storageKeys.theme, activeTheme);
   localStorage.setItem(storageKeys.sync, syncScroll.checked ? "true" : "false");
+
+  if (cssIsCustom) {
+    localStorage.setItem(storageKeys.css, cssInput.value);
+    localStorage.setItem(storageKeys.cssMode, "custom");
+  } else {
+    localStorage.removeItem(storageKeys.css);
+    localStorage.removeItem(storageKeys.cssMode);
+  }
 }
 
 function materializeCopyDecorations(clone) {
@@ -781,9 +792,11 @@ async function loadTheme(themeName, options = {}) {
   const nextTheme = themeFiles[themeName] ? themeName : "wechat";
   activeTheme = nextTheme;
   themeSelect.value = nextTheme;
+  cssIsCustom = false;
 
   try {
-    const response = await fetch(themeFiles[nextTheme].path);
+    const themeUrl = `${themeFiles[nextTheme].path}?v=${themeAssetVersion}`;
+    const response = await fetch(themeUrl, { cache: "no-cache" });
     if (!response.ok) throw new Error(`Failed to load ${themeFiles[nextTheme].path}`);
     cssInput.value = await response.text();
   } catch {
@@ -800,9 +813,12 @@ async function restore() {
   syncScroll.checked = localStorage.getItem(storageKeys.sync) !== "false";
 
   const savedCss = localStorage.getItem(storageKeys.css);
-  if (savedCss && !savedCss.includes("当前 CSS 会参与预览")) {
+  const savedCssMode = localStorage.getItem(storageKeys.cssMode);
+  if (savedCssMode === "custom" && savedCss && !savedCss.includes("当前 CSS 会参与预览")) {
     cssInput.value = savedCss;
+    cssIsCustom = true;
   } else {
+    cssIsCustom = false;
     await loadTheme(activeTheme, { silent: true });
   }
 }
@@ -818,6 +834,7 @@ markdownInput.addEventListener("input", () => {
 
 cssInput.addEventListener("input", () => {
   saveState.textContent = "保存中...";
+  cssIsCustom = true;
   renderMarkdown();
 });
 
