@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>WeChat Markdown Renderer</title>
-    <link rel="stylesheet" href="./app.css?v=20260606-heading-spacing" />
+    <link rel="stylesheet" href="./app.css?v=20260606-toc-wechat-adapters" />
     <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
   </head>
@@ -22,6 +22,8 @@
           <div class="actions">
             <select class="theme-select" id="themeSelect" title="切换 CSS 主题">
               <option value="wechat">公众号</option>
+              <option value="founderWechat">PDF 手册（公众号）</option>
+              <option value="technicalWechat">技术文档（公众号）</option>
               <option value="founder">PDF 手册</option>
               <option value="technical">技术文档</option>
             </select>
@@ -64,6 +66,6 @@
         </div>
       </section>
     </main>
-    <script src="./app.js?v=20260606-heading-spacing"></script>
+    <script src="./app.js?v=20260606-toc-wechat-adapters"></script>
   </body>
 </html>

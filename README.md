@@ -37,7 +37,7 @@ python -m http.server 8787 --bind 127.0.0.1
 ## 项目结构
 
 ```text
-themes/                 三套 Markdown CSS 主题
+themes/                 三套基础 Markdown CSS 主题与两个公众号适配层
 wechat-renderer/        本地微信公众号 Markdown 渲染器
 docs/                   项目记录、功能清单、CSS 认知
 markdown-css-design-notes.md
@@ -47,6 +47,6 @@ markdown-css-design-notes.md
 ## 当前重点
 
 - 把 Markdown 渲染成可复制到微信公众号后台的富文本。
-- 建立三套可切换、可修改、可持续优化的 CSS 主题。
+- 建立三套基础 CSS 主题，并为 PDF 手册 / 技术文档提供公众号适配版。
 - 记录 CSS 排版原则，沉淀为后续 GitHub 项目的文档基础。
 - 对照 Doocs / MDNice 等成熟项目，持续补齐微信复制兼容策略。

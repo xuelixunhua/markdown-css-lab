@@ -1,0 +1,37 @@
+/*
+ * Founder Editorial - WeChat Adapter
+ * Use after founder-editorial.css when the handbook style is rendered inside a
+ * WeChat-width editor instead of an A4/PDF canvas.
+ */
+
+#nice,
+.wechat-rendered,
+.mdnice {
+  max-width: none;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+@media screen {
+  #nice,
+  .wechat-rendered,
+  .mdnice {
+    min-height: 0;
+    box-shadow: none;
+  }
+}
+
+#nice .cover-page,
+#nice .chapter-page,
+.wechat-rendered .cover-page,
+.wechat-rendered .chapter-page,
+.mdnice .cover-page,
+.mdnice .chapter-page {
+  min-height: 0;
+  margin: 1.6rem 0;
+  padding: 1.4rem 1.2rem;
+  page-break-after: auto;
+}

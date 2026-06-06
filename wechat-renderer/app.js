@@ -68,6 +68,14 @@ const themeFiles = {
     label: "公众号",
     path: "../themes/wechat-editorial.css",
   },
+  founderWechat: {
+    label: "PDF 手册（公众号）",
+    paths: ["../themes/founder-editorial.css", "../themes/founder-editorial-wechat.css"],
+  },
+  technicalWechat: {
+    label: "技术文档（公众号）",
+    paths: ["../themes/technical-doc.css", "../themes/technical-doc-wechat.css"],
+  },
   founder: {
     label: "PDF 手册",
     path: "../themes/founder-editorial.css",
@@ -78,7 +86,7 @@ const themeFiles = {
   },
 };
 
-const themeAssetVersion = "20260606-heading-spacing";
+const themeAssetVersion = "20260606-toc-wechat-adapters";
 
 let activeTheme = "wechat";
 let cssIsCustom = false;
@@ -355,26 +363,62 @@ function prepareThemeCss(css) {
 }
 
 function buildToc(headings) {
-  const toc = document.createElement("div");
+  const toc = document.createElement("nav");
   toc.className = "toc";
+  toc.setAttribute("role", "doc-toc");
+  toc.setAttribute("aria-label", "目录");
 
-  const list = document.createElement("ul");
   const tocHeadings = headings.filter((heading) => {
     const text = heading.textContent.trim().toLowerCase();
     return heading.tagName !== "H1" && text !== "目录" && text !== "contents";
   });
   const items = tocHeadings.length ? tocHeadings : headings;
+  const levels = items.map((heading) => Number(heading.tagName.slice(1)));
+  const rootLevel = Math.min(...levels);
+  let topLevelCount = 0;
+
+  const list = document.createElement("ul");
+  list.className = `toc-list toc-level-${rootLevel}`;
+  const stack = [{ level: rootLevel, list, lastItem: null }];
 
   items.forEach((heading) => {
     const level = Number(heading.tagName.slice(1));
+    while (stack.length > 1 && level < stack[stack.length - 1].level) {
+      stack.pop();
+    }
+
+    if (level > stack[stack.length - 1].level) {
+      const parent = stack[stack.length - 1];
+      const nestedList = document.createElement("ul");
+      nestedList.className = `toc-list toc-level-${level}`;
+      (parent.lastItem || parent.list).appendChild(nestedList);
+      stack.push({ level, list: nestedList, lastItem: null });
+    }
+
     const li = document.createElement("li");
-    li.style.marginLeft = `${Math.max(0, level - 2) * 14}px`;
+    li.className = `toc-item toc-level-${level}`;
+    li.dataset.level = String(level);
+
+    if (level === rootLevel) {
+      topLevelCount += 1;
+    }
 
     const link = document.createElement("a");
     link.href = `#${heading.id}`;
-    link.textContent = heading.textContent.trim();
+
+    const marker = document.createElement("span");
+    marker.className = "toc-marker";
+    marker.textContent =
+      level === rootLevel ? String(topLevelCount).padStart(2, "0") : "·";
+
+    const text = document.createElement("span");
+    text.className = "toc-text";
+    text.textContent = heading.textContent.trim();
+
+    link.append(marker, text);
     li.appendChild(link);
-    list.appendChild(li);
+    stack[stack.length - 1].list.appendChild(li);
+    stack[stack.length - 1].lastItem = li;
   });
 
   toc.appendChild(list);
@@ -610,6 +654,7 @@ function moveInlineContent(target, source) {
 function flattenListForWeChat(listNode, level = 0) {
   const fragment = document.createDocumentFragment();
   const items = [...listNode.children].filter((child) => child.tagName === "LI");
+  const isTocList = Boolean(listNode.closest(".toc"));
 
   items.forEach((item, index) => {
     const nestedLists = [...item.children].filter((child) => ["UL", "OL"].includes(child.tagName));
@@ -618,12 +663,12 @@ function flattenListForWeChat(listNode, level = 0) {
     const row = document.createElement("section");
     row.setAttribute("style", item.getAttribute("style") || "");
     row.style.display = "block";
-    row.style.margin = item.style.margin || "6px 0";
+    row.style.margin = item.style.margin || (isTocList ? "3px 0" : "6px 0");
     row.style.padding = "0";
-    row.style.paddingLeft = level ? `${level * 1.25}em` : "0";
+    row.style.paddingLeft = level ? `${level * (isTocList ? 1 : 1.25)}em` : "0";
     row.style.listStyleType = "none";
 
-    row.appendChild(createListPrefix(listNode, index, level));
+    if (!isTocList) row.appendChild(createListPrefix(listNode, index, level));
     moveInlineContent(row, item);
     fragment.appendChild(row);
 
@@ -795,10 +840,16 @@ async function loadTheme(themeName, options = {}) {
   cssIsCustom = false;
 
   try {
-    const themeUrl = `${themeFiles[nextTheme].path}?v=${themeAssetVersion}`;
-    const response = await fetch(themeUrl, { cache: "no-cache" });
-    if (!response.ok) throw new Error(`Failed to load ${themeFiles[nextTheme].path}`);
-    cssInput.value = await response.text();
+    const paths = themeFiles[nextTheme].paths || [themeFiles[nextTheme].path];
+    const cssParts = await Promise.all(
+      paths.map(async (path) => {
+        const themeUrl = `${path}?v=${themeAssetVersion}`;
+        const response = await fetch(themeUrl, { cache: "no-cache" });
+        if (!response.ok) throw new Error(`Failed to load ${path}`);
+        return response.text();
+      })
+    );
+    cssInput.value = cssParts.join("\n\n");
   } catch {
     cssInput.value = sampleCss;
   }

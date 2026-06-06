@@ -302,36 +302,75 @@
 #nice .toc,
 .wechat-rendered .toc,
 .mdnice .toc {
-  margin: 18px 0;
-  padding: 10px 12px;
-  border: 1px solid var(--we-rule);
-  border-left: 3px solid var(--we-accent);
-  border-radius: 4px;
-  background: var(--we-tint);
-  line-height: 1.28;
+  margin: 14px 0 28px;
+  padding: 2px 0 2px 14px;
+  border: 0;
+  border-left: 2px solid var(--we-accent);
+  background: transparent;
+  line-height: 1.35;
 }
 
 #nice .toc ul,
 .wechat-rendered .toc ul,
-.mdnice .toc ul {
+.mdnice .toc ul,
+#nice .toc-list,
+.wechat-rendered .toc-list,
+.mdnice .toc-list {
   margin: 0;
   padding-left: 0;
   list-style: none;
 }
 
+#nice .toc ul ul,
+.wechat-rendered .toc ul ul,
+.mdnice .toc ul ul,
+#nice .toc-list .toc-list,
+.wechat-rendered .toc-list .toc-list,
+.mdnice .toc-list .toc-list {
+  margin: 3px 0 4px 0;
+  padding-left: 16px;
+  border-left: 1px solid rgba(216, 117, 86, 0.22);
+}
+
 #nice .toc li,
 .wechat-rendered .toc li,
-.mdnice .toc li {
-  margin: 2px 0;
+.mdnice .toc li,
+#nice .toc-item,
+.wechat-rendered .toc-item,
+.mdnice .toc-item {
+  margin: 3px 0;
   color: var(--we-soft-ink);
-  font-size: 13px;
-  line-height: 1.35;
+  font-size: 13.5px;
+  line-height: 1.42;
 }
 
 #nice .toc a,
 .wechat-rendered .toc a,
 .mdnice .toc a {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--we-accent-dark);
   border-bottom: 0;
+  text-decoration: none;
+}
+
+#nice .toc-marker,
+.wechat-rendered .toc-marker,
+.mdnice .toc-marker {
+  min-width: 18px;
+  color: var(--we-accent);
+  font-family: var(--we-sans);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1;
+  text-align: right;
+}
+
+#nice .toc-text,
+.wechat-rendered .toc-text,
+.mdnice .toc-text {
+  color: var(--we-accent-dark);
 }
 
 #nice .external-link-text,

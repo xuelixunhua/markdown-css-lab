@@ -1,0 +1,22 @@
+/*
+ * Technical Doc - WeChat Adapter
+ * Use after technical-doc.css when the documentation style is rendered inside a
+ * WeChat-width editor instead of a desktop documentation canvas.
+ */
+
+#nice,
+.wechat-rendered,
+.mdnice {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+@media only screen and (min-width: 1400px) {
+  #nice,
+  .wechat-rendered,
+  .mdnice {
+    max-width: none;
+  }
+}
